@@ -1,0 +1,94 @@
+import java.awt.Color;
+import java.awt.Canvas;
+import java.awt.Graphics;
+import java.awt.image.BufferStrategy;
+import javax.swing.JFrame;
+
+public class AChuva extends Canvas implements Runnable {
+
+    public static final int comprimento = 1280, largura = comprimento / 16 * 9, gotas = 10000;
+    public boolean executando = false;
+    public Thread thread;
+    public Gota[] queda = new Gota[gotas];
+    BufferStrategy bs;
+    public Graphics g;
+
+    public AChuva() {
+        for (int i = 0; i < gotas; i++) {
+            queda[i] = new Gota();
+        }
+    }
+
+    public synchronized void começo() {
+        if (executando) {
+            return;
+        }
+        thread = new Thread(this, "Gotas");
+        thread.start();
+        executando = true;
+    }
+
+    public void renderizar() {
+        bs = getBufferStrategy();
+        if (bs == null) {
+            createBufferStrategy(3);
+            return;
+        }
+        g = bs.getDrawGraphics();
+        g.setColor(Color.BLACK);
+        g.fillRect(0, 0, comprimento, largura);
+        for (int i = 0; i < gotas; i++) {
+            if (queda[i].getY() >= AChuva.largura - 60 && queda[i].getY() <= AChuva.largura - 30) {
+                queda[i].splash(g);
+            } else {
+                queda[i].desenhar(g);
+            }
+        }
+        
+        //g.dispose();
+        bs.show();
+    }
+
+    public void atualizar() {
+        for (int i = 0; i < gotas; i++) {
+            queda[i].atualizar();
+
+        }
+    }
+
+    public synchronized void parar() {
+        if (!executando) {
+            return;
+        }
+        executando = false;
+        try {
+            thread.join();
+        } catch (InterruptedException g) {
+            g.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args) {
+        AChuva chove = new AChuva();
+        JFrame app = new JFrame("Chuva");
+        app.add(chove);
+        app.setResizable(false);
+        app.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        app.setSize(comprimento, largura);
+        //app.getContentPane().setBackground(Color.GREEN);
+        app.setLocationRelativeTo(null);
+        app.setVisible(true);
+        chove.começo();
+    }
+
+    @Override
+    public void run() {
+        renderizar();
+        while (executando) {
+            atualizar();
+            renderizar();
+        }
+        parar();
+    }
+
+}
