@@ -1,0 +1,43 @@
+import java.awt.Color;
+import java.awt.Graphics;
+import java.util.Random;
+
+public class Gota {
+
+    private Random ale;
+    private int x, y, yvelocidade;
+
+    public Gota() {
+        ale = new Random();
+        x = ale.nextInt(AChuva.comprimento);
+        y = -ale.nextInt(200);
+        yvelocidade = ale.nextInt(9) + 1;
+    }
+
+    void atualizar() {
+        y += yvelocidade;
+        if (y > AChuva.largura - 30) {
+            x = ale.nextInt(AChuva.comprimento);
+            y = -ale.nextInt(500);
+        }
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    void desenhar(Graphics g) {
+        g.setColor(Color.WHITE);
+        g.fillRect(x, y, 1, 1);
+    }
+
+    void splash(Graphics g) {
+        g.setColor(new Color(138, 43, 226));
+        g.fillRect(x, y, 10, 2);
+        if (y > AChuva.largura - 30) {
+            x = ale.nextInt(AChuva.comprimento);
+            y = -ale.nextInt(500);
+        }
+        
+    }
+}
